@@ -1,5 +1,6 @@
 <?php
 use Michelf\Markdown;
+header('Content-type: application/json;charset=utf8');
 include_once 'inc.php';
 $db = new MongoClient( $config[ 'db' ][ 'conn' ][ 'uri' ], $config[ 'db' ][ 'conn' ][ 'opt' ] );
 $coll = array (
