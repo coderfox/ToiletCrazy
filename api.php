@@ -31,7 +31,8 @@ try {
                                 $return[ 'posts' ][ ] = array (
                                         'id' => $k,
                                         'title' => $v[ 'title' ],
-                                        'text' => Markdown::defaultTransform( $v[ 'text' ] ),
+                                        'text_html' => Markdown::defaultTransform( $v[ 'text' ] ),
+                                        'text_md' => $v[ 'text' ],
                                         'author' => $Rauthor,
                                         'time' => $v[ 'time' ] 
                                 );
@@ -54,14 +55,14 @@ try {
                                     'nick' => $_REQUEST[ 'nick' ],
                                     'pass' => md5( $_REQUEST[ 'pass' ] ) 
                             ) )->count() > 0) {
-                                $token=$coll[ 'users' ]->find( array (
+                                $token = $coll[ 'users' ]->find( array (
                                         'nick' => $_REQUEST[ 'nick' ],
-                                        'pass' => md5( $_REQUEST[ 'pass' ] )
+                                        'pass' => md5( $_REQUEST[ 'pass' ] ) 
                                 ) )->getNext()['token'];
-                                $return=array(
-                                	'token'=>$token
+                                $return = array (
+                                        'token' => $token 
                                 );
-                                echo json_encode($return);
+                                echo json_encode( $return );
                             } else {
                                 throw new Exception( 'nickname and password mismatch', 2 );
                             }
@@ -75,12 +76,77 @@ try {
                 switch ($_REQUEST[ 'api' ]) {
                     case 'show' :
                         {
+                            if ($_SERVER[ 'REQUEST_METHOD' ] != 'GET') {
+                                throw new Exception( 'invaid method', 1 );
+                            }
+                            $post = $coll[ 'posts' ]->find( array (
+                                    '_id' => new MongoId( $_REQUEST[ 'id' ] ) 
+                            ) )->limit( 1 )->getNext();
+                            if (! $post) {
+                                throw new Exception( 'invaid id', 4 );
+                            }
+                            $author = $coll[ 'users' ]->find( array (
+                                    '_id' => new MongoId( $post[ 'author' ] ) 
+                            ) )->getNext();
+                            $return = array (
+                                    'id' => $_REQUEST[ 'id' ],
+                                    'title' => $post[ 'title' ],
+                                    'author' => array (
+                                            'id' => $post[ 'author' ],
+                                            'nick' => $author[ 'nick' ] 
+                                    ),
+                                    'text_html' => Markdown::defaultTransform( $post[ 'text' ] ),
+                                    'text_md' => $post[ 'text' ],
+                                    'time' => $post[ 'time' ] 
+                            );
+                            echo json_encode( $return );
                             break;
                         }
                     case 'post' :
                         {
                             if ($_SERVER[ 'REQUEST_METHOD' ] != 'POST') {
                                 throw new Exception( 'invaid method', 1 );
+                            }
+                            $author = $coll[ 'users' ]->find( array (
+                                    'token' => $_REQUEST[ 'token' ] 
+                            ) )->getNext();
+                            if ($author) {
+                                $ins = array (
+                                        'title' => $_REQUEST[ 'title' ],
+                                        'text' => $_REQUEST[ 'text' ],
+                                        'author' => (string) ($author[ '_id' ]),
+                                        'time' => time() 
+                                );
+                                $result = $coll[ 'posts' ]->insert( $ins );
+                                if ($result) {
+                                    $id = (string) $ins[ '_id' ];
+                                    // show
+                                    $post = $coll[ 'posts' ]->find( array (
+                                            '_id' => new MongoId( $id ) 
+                                    ) )->limit( 1 )->getNext();
+                                    if (! $post) {
+                                        throw new Exception( 'invaid id', 4 );
+                                    }
+                                    $author = $coll[ 'users' ]->find( array (
+                                            '_id' => new MongoId( $post[ 'author' ] ) 
+                                    ) )->getNext();
+                                    $return = array (
+                                            'id' => $id,
+                                            'title' => $post[ 'title' ],
+                                            'author' => array (
+                                                    'id' => $post[ 'author' ],
+                                                    'nick' => $author[ 'nick' ] 
+                                            ),
+                                            'text_html' => Markdown::defaultTransform( $post[ 'text' ] ),
+                                            'text_md' => $post[ 'text' ],
+                                            'time' => $post[ 'time' ] 
+                                    );
+                                    echo json_encode( $return );
+                                } else {
+                                    throw new Exception( 'server error', 0 );
+                                }
+                            } else {
+                                throw new Exception( 'invaid token', 5 );
                             }
                             break;
                         }
@@ -92,10 +158,36 @@ try {
                 switch ($_REQUEST[ 'api' ]) {
                     case 'show' :
                         {
+                            if ($_SERVER[ 'REQUEST_METHOD' ] != 'GET') {
+                                throw new Exception( 'invaid method', 1 );
+                            }
                             break;
                         }
                     case 'reg' :
                         {
+                            if ($_SERVER[ 'REQUEST_METHOD' ] != 'POST') {
+                                throw new Exception( 'invaid method', 1 );
+                            }
+                            if ($coll[ 'users' ]->find( array (
+                                    'nick' => $_REQUEST[ 'nick' ] 
+                            ) )->count() > 0) {
+                                throw new Exception( 'nickname already used', 3 );
+                            } else {
+                                $result = $coll[ 'users' ]->insert( array (
+                                        'nick' => $_REQUEST[ 'nick' ],
+                                        'pass' => md5( $_REQUEST[ 'pass' ] ),
+                                        'token' => md5( $_REQUEST[ 'nick' ] . $_REQUEST[ 'pass' ] ) 
+                                ) );
+                                if ($result) {
+                                    $return = array (
+                                            'nick' => $_REQUEST[ 'nick' ],
+                                            'token' => md5( $_REQUEST[ 'nick' ] . $_REQUEST[ 'pass' ] ) 
+                                    );
+                                    echo json_encode( $return );
+                                } else {
+                                    throw new Exception( 'server error', 0 );
+                                }
+                            }
                             break;
                         }
                 }
