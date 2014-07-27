@@ -1,0 +1,18 @@
+{
+  "sina": {
+    "key": "",
+    "sec": "",
+    "uri": ""
+  },
+  "db": {
+    "conn": {
+      "uri": "",
+      "opt": {}
+    },
+    "db": "ToiletCrazy",
+    "coll": {
+      "users": "users",
+      "posts": "posts"
+    }
+  }
+}
