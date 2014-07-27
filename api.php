@@ -161,6 +161,35 @@ try {
                             if ($_SERVER[ 'REQUEST_METHOD' ] != 'GET') {
                                 throw new Exception( 'invaid method', 1 );
                             }
+                            $result = iterator_to_array( $coll[ 'posts' ]->find( array (
+                                    'author' => $_REQUEST[ 'id' ] 
+                            ) )->sort( array (
+                                    'time' => - 1 
+                            ) )->limit( 20 ) );
+                            $return[ 'posts' ] = array ();
+                            $posts_c = 0;
+                            foreach ( $result as $k => $v ) {
+                                $author = iterator_to_array( $coll[ 'users' ]->find( array (
+                                        '_id' => new MongoId( $v[ 'author' ] ) 
+                                ) ) )[$v[ 'author' ]];
+                                $Rauthor = array (
+                                        'id' => $v[ 'author' ],
+                                        'nick' => $author[ 'nick' ] 
+                                );
+                                $return[ 'posts' ][ ] = array (
+                                        'id' => $k,
+                                        'title' => $v[ 'title' ],
+                                        'text_html' => Markdown::defaultTransform( $v[ 'text' ] ),
+                                        'text_md' => $v[ 'text' ],
+                                        'author' => $Rauthor,
+                                        'time' => $v[ 'time' ] 
+                                );
+                                $posts_c ++;
+                            }
+                            $return[ 'id' ] = $_REQUEST[ 'id' ];
+                            $return[ 'post_count' ] = $posts_c;
+                            $return[ 'nick' ] = $Rauthor[ 'nick' ];
+                            echo json_encode( $return );
                             break;
                         }
                     case 'reg' :
