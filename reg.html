@@ -29,32 +29,19 @@
 <script src="js/github.info.js"></script>
 
 <script>
-$.extend({
-  getUrlVars: function(){
-    var vars = [], hash;
-    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-    for(var i = 0; i < hashes.length; i++)
-    {
-      hash = hashes[i].split('=');
-      vars.push(hash[0]);
-      vars[hash[0]] = hash[1];
-    }
-    return vars;
-  },
-  getUrlVar: function(name){
-    return $.getUrlVars()[name];
-  }
-});
-$.get("api.php",{"mod":"post","api":"show","id":$.getUrlVar("id")},function (data) {
-	console.log(data);
-	$("#doc-title").html(data.title+" - "+data.author.nick);
-	$("#title").html(data.title);
-	$("#subtitle").html(data.author.nick+" AT "+data.time);
-	$("#context").html(data.text_html);
-},"json");
+var sub=function(){
+	$.post("api.php",{"mod":"user","api":"reg","nick":$("#nick").val(),"pass":$("#pass").val()},function(data){
+		if(data.token){
+			$("#token").val(data.token);
+			$("#token").attr("data-state","success");
+		}else{
+			alert("error: "+data.error);
+		}
+	},"json");
+}
 </script>
 
-<title id="doc-title">ToiletCrazy</title>
+<title>ToiletCrazy</title>
 <style>
 </style>
 </head>
@@ -69,6 +56,18 @@ $.get("api.php",{"mod":"post","api":"show","id":$.getUrlVar("id")},function (dat
 		</div>
 	</div>
 	<div class="container" id="context">
+		<form>
+		<fieldset>
+			<legend>Register</legend>
+			<label>Nickname</label>
+			<input id="nick" type="text" data-transform="input-control"/><br/>
+			<label>Password</label>
+			<input id="pass" type="password" data-transform="input-control"/><br/>
+			<input id="submit" type="button" value="Submit" onclick="sub();" />
+			<label>Token (Will show after submit)</label>
+			<input id="token" type="text" data-transform="input-control" disabled /><br/>
+		</fieldset>
+		</form>
 	</div>
 	<div class="bg-gray" data-load="footer.html"></div>
 </body>

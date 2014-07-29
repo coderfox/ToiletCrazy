@@ -29,12 +29,20 @@
 <script src="js/github.info.js"></script>
 
 <script>
-$.get("api.php",{"mod":"post","api":"show","id":"53d491e13258436c2000002d"},function (data) {
-	console.log("req finished");
-	$("#title").html(data.title);
-	$("#subtitle").html(data.author.nick);
-	$("#context").html(data.text_html);
-},"json");
+function loadData(){
+	$.get("api.php",{"mod":"timeline","api":"public"},function (data) {
+		var html="<table class=\"table bordered hovered\"><tbody><tr><td>标题</td><td>作者</td><td>时间</td></tr>";
+		console.log("req finished");
+		for(i in data.posts)
+		{
+			html += "<tr><td><a href=\"post_show.html?id="+data.posts[i].id+"\">"+data.posts[i].title+"</a></td><td>"+data.posts[i].author.nick+"</td><td>"+data.posts[i].time+"</td></tr>";
+		}
+		html+="</tbody></table>";
+		console.log(html);
+		$("#context").html(html);
+	},"json");
+}
+loadData();
 </script>
 
 <title>ToiletCrazy</title>

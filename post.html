@@ -29,32 +29,18 @@
 <script src="js/github.info.js"></script>
 
 <script>
-$.extend({
-  getUrlVars: function(){
-    var vars = [], hash;
-    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-    for(var i = 0; i < hashes.length; i++)
-    {
-      hash = hashes[i].split('=');
-      vars.push(hash[0]);
-      vars[hash[0]] = hash[1];
-    }
-    return vars;
-  },
-  getUrlVar: function(name){
-    return $.getUrlVars()[name];
-  }
-});
-$.get("api.php",{"mod":"post","api":"show","id":$.getUrlVar("id")},function (data) {
-	console.log(data);
-	$("#doc-title").html(data.title+" - "+data.author.nick);
-	$("#title").html(data.title);
-	$("#subtitle").html(data.author.nick+" AT "+data.time);
-	$("#context").html(data.text_html);
-},"json");
+var sub=function(){
+	$.post("api.php",{"mod":"post","api":"post","title":$("#ititle").val(),"text":$("#text").val(),"token":$("#token").val()},function(data){
+		if(data.id){
+			document.location="post_show.html?id="+data.id;
+		}else{
+			alert("error: "+data.error);
+		}
+	},"json");
+};
 </script>
 
-<title id="doc-title">ToiletCrazy</title>
+<title>ToiletCrazy</title>
 <style>
 </style>
 </head>
@@ -69,6 +55,18 @@ $.get("api.php",{"mod":"post","api":"show","id":$.getUrlVar("id")},function (dat
 		</div>
 	</div>
 	<div class="container" id="context">
+		<form>
+		<fieldset>
+			<legend>Post a new post</legend>
+			<label>Title</label>
+			<input id="ititle" type="text" data-transform="input-control"/><br/>
+			<label>Token</label>
+			<input id="token" type="text" data-transform="input-control"/><br/>
+			<label>Text</label>
+			<textarea id="text" data-transform="input-control"></textarea><br/>
+			<input id="submit" type="button" value="Submit" onclick="sub();" />
+		</fieldset>
+		</form>
 	</div>
 	<div class="bg-gray" data-load="footer.html"></div>
 </body>

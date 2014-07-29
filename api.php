@@ -1,5 +1,6 @@
 <?php
-use Michelf\Markdown;
+use Michelf\MarkdownExtra;
+//use Michelf\MarkdownExtra;
 header('Content-type: application/json;charset=utf8');
 include_once 'inc.php';
 $db = new MongoClient( $config[ 'db' ][ 'conn' ][ 'uri' ], $config[ 'db' ][ 'conn' ][ 'opt' ] );
@@ -32,7 +33,7 @@ try {
                                 $return[ 'posts' ][ ] = array (
                                         'id' => $k,
                                         'title' => $v[ 'title' ],
-                                        'text_html' => Markdown::defaultTransform( $v[ 'text' ] ),
+                                        'text_html' => MarkdownExtra::defaultTransform( $v[ 'text' ] ),
                                         'text_md' => $v[ 'text' ],
                                         'author' => $Rauthor,
                                         'time' => $v[ 'time' ] 
@@ -96,7 +97,7 @@ try {
                                             'id' => $post[ 'author' ],
                                             'nick' => $author[ 'nick' ] 
                                     ),
-                                    'text_html' => Markdown::defaultTransform( $post[ 'text' ] ),
+                                    'text_html' => MarkdownExtra::defaultTransform( $post[ 'text' ] ),
                                     'text_md' => $post[ 'text' ],
                                     'time' => $post[ 'time' ] 
                             );
@@ -138,7 +139,7 @@ try {
                                                     'id' => $post[ 'author' ],
                                                     'nick' => $author[ 'nick' ] 
                                             ),
-                                            'text_html' => Markdown::defaultTransform( $post[ 'text' ] ),
+                                            'text_html' => MarkdownExtra::defaultTransform( $post[ 'text' ] ),
                                             'text_md' => $post[ 'text' ],
                                             'time' => $post[ 'time' ] 
                                     );
@@ -180,7 +181,7 @@ try {
                                 $return[ 'posts' ][ ] = array (
                                         'id' => $k,
                                         'title' => $v[ 'title' ],
-                                        'text_html' => Markdown::defaultTransform( $v[ 'text' ] ),
+                                        'text_html' => MarkdownExtra::defaultTransform( $v[ 'text' ] ),
                                         'text_md' => $v[ 'text' ],
                                         'author' => $Rauthor,
                                         'time' => $v[ 'time' ] 
