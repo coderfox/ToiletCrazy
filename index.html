@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="product" content="">
+<meta name="description" content="">
+<meta name="author" content="">
+<meta name="keywords" content="">
+
+<link href="css/metro-bootstrap.css" rel="stylesheet">
+<link href="css/metro-bootstrap-responsive.css" rel="stylesheet">
+<link href="css/iconFont.css" rel="stylesheet">
+<link href="css/docs.css" rel="stylesheet">
+<link href="js/prettify/prettify.css" rel="stylesheet">
+
+<!-- Load JavaScript Libraries -->
+<script src="js/jquery/jquery.min.js"></script>
+<script src="js/jquery/jquery.widget.min.js"></script>
+<script src="js/jquery/jquery.mousewheel.js"></script>
+<script src="js/prettify/prettify.js"></script>
+
+<!-- Metro UI CSS JavaScript plugins -->
+<script src="js/load-metro.js"></script>
+
+<!-- Local JavaScript -->
+<script src="js/docs.js"></script>
+<script src="js/github.info.js"></script>
+
+<script>
+function loadData(){
+	$.get("api.php",{"mod":"timeline","api":"public"},function (data) {
+		var html="<table class=\"table bordered hovered\"><tbody><tr><td>标题</td><td>作者</td><td>时间</td></tr>";
+		console.log("req finished");
+		for(i in data.posts)
+		{
+			html += "<tr><td><a href=\"post_show.html?id="+data.posts[i].id+"\">"+data.posts[i].title+"</a></td><td>"+data.posts[i].author.nick+"</td><td>"+data.posts[i].time+"</td></tr>";
+		}
+		html+="</tbody></table>";
+		console.log(html);
+		$("#context").html(html);
+	},"json");
+}
+loadData();
+</script>
+
+<title>ToiletCrazy</title>
+<style>
+</style>
+</head>
+<body class="metro" style="background-color: #efeae3">
+	<header data-load="header.html"></header>
+	<div>
+		<div>
+			<div class="container" style="padding: 20px 20px">
+				<h1 class="fg-black" id="title">ToiletCrazy</h1>
+				<h2 id="subtitle">Dream inspires future.</h2>
+			</div>
+		</div>
+	</div>
+	<div class="container" id="context">
+	</div>
+	<div class="bg-gray" data-load="footer.html"></div>
+</body>
+</html>
