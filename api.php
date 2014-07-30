@@ -1,7 +1,7 @@
 <?php
 use Michelf\MarkdownExtra;
-//use Michelf\MarkdownExtra;
-header('Content-type: application/json;charset=utf8');
+// use Michelf\MarkdownExtra;
+header( 'Content-type: application/json;charset=utf8' );
 include_once 'inc.php';
 $db = new MongoClient( $config[ 'db' ][ 'conn' ][ 'uri' ], $config[ 'db' ][ 'conn' ][ 'opt' ] );
 $coll = array (
@@ -36,7 +36,7 @@ try {
                                         'text_html' => MarkdownExtra::defaultTransform( $v[ 'text' ] ),
                                         'text_md' => $v[ 'text' ],
                                         'author' => $Rauthor,
-                                        'time' => $v[ 'time' ] 
+                                        'time' => date( "Y-m-d H:i:s", $v[ 'time' ] ) 
                                 );
                             }
                             echo json_encode( $return );
@@ -99,7 +99,7 @@ try {
                                     ),
                                     'text_html' => MarkdownExtra::defaultTransform( $post[ 'text' ] ),
                                     'text_md' => $post[ 'text' ],
-                                    'time' => $post[ 'time' ] 
+                                    'time' => date( "Y-m-d H:i:s", $post[ 'time' ] ) 
                             );
                             echo json_encode( $return );
                             break;
@@ -184,7 +184,7 @@ try {
                                         'text_html' => MarkdownExtra::defaultTransform( $v[ 'text' ] ),
                                         'text_md' => $v[ 'text' ],
                                         'author' => $Rauthor,
-                                        'time' => $v[ 'time' ] 
+                                        'time' => date( "Y-m-d H:i:s", $v[ 'time' ] ) 
                                 );
                                 $posts_c ++;
                             }
