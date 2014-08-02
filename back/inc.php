@@ -1,7 +1,7 @@
 <?php
 // markdown
-include_once __DIR__ . DIRECTORY_SEPARATOR . 'markdown/Michelf/Markdown.inc.php';
-include_once __DIR__ . DIRECTORY_SEPARATOR . 'markdown/Michelf/MarkdownExtra.inc.php';
+include_once __DIR__ .'/md/Michelf/Markdown.inc.php';
+include_once __DIR__ .'/md/Michelf/MarkdownExtra.inc.php';
 // config
 if(file_exists('config.json')){
 $config = fopen( 'config.json', 'r' );
