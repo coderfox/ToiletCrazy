@@ -2,9 +2,9 @@
 // markdown
 include_once __DIR__ . '/md/Michelf/Markdown.inc.php';
 include_once __DIR__ . '/md/Michelf/MarkdownExtra.inc.php';
-//classes
+// classes
 include_once __DIR__ . '/classes/apiex.php';
-//functions
+// functions
 include_once __DIR__ . '/functions/user.php';
 include_once __DIR__ . '/functions/post.php';
 include_once __DIR__ . '/functions/api.php';
