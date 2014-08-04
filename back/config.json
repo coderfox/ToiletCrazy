@@ -1,0 +1,18 @@
+{
+  "sina": {
+    "key": "",
+    "sec": "",
+    "uri": ""
+  },
+  "db": {
+    "conn": {
+      "uri": "mongodb://127.0.0.1",
+      "opt": {}
+    },
+    "db": "ToiletCrazy",
+    "coll": {
+      "users": "users",
+      "posts": "posts"
+    }
+  }
+}
