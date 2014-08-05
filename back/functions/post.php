@@ -7,6 +7,8 @@ function parse_post_return_array($coll, $post){
             'author' => get_user_array( $coll, $post[ 'author' ] ),
             'text_html' => MarkdownExtra::defaultTransform( $post[ 'text' ] ),
             'text_md' => $post[ 'text' ],
+            'text_plain' => strip_tags( MarkdownExtra::defaultTransform( $post[ 'text' ] ) ),
+            'text_preview' => mb_substr( strip_tags( MarkdownExtra::defaultTransform( $post[ 'text' ] ) ), 0, 100, "utf8" ),
             'time' => date( "Y-m-d H:i:s", $post[ 'time' ] ) 
     );
 }
@@ -26,7 +28,7 @@ function parse_posts($coll, $datas){
     return $return;
 }
 function get_post_array($coll, $id){
-    return parse_post_array( $coll,$coll[ 'posts' ]->find( array (
+    return parse_post_array( $coll, $coll[ 'posts' ]->find( array (
             '_id' => new MongoId( $id ) 
     ) )->limit( 1 )->getNext() );
 }

@@ -1,6 +1,6 @@
 <?php
 header( 'Content-type: application/json;charset=utf8' );
-include_once 'inc.php';
+include_once __DIR__ . 'inc.php';
 $db = new MongoClient( $config[ 'db' ][ 'conn' ][ 'uri' ], $config[ 'db' ][ 'conn' ][ 'opt' ] );
 $coll = array (
         'users' => $db->selectCollection( $config[ 'db' ][ 'db' ], $config[ 'db' ][ 'coll' ][ 'users' ] ),
