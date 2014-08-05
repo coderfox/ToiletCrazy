@@ -42,3 +42,16 @@ function callback($function, $args){
         throw new Exception( 'invaid function param' );
     }
 }
+function uhtml($str){
+    $farr = array (
+            "/<(\/?)(object|script|i?frame|style|html|body|title|link|meta|\?|\%)([^>]*?)>/isU",
+            "/(<[^>]*)on[a-zA-Z]+\s*=([^>]*>)/isU"
+        );
+    $tarr = array (
+            " ",
+            "",
+            "\1\2" 
+    );
+    $str = preg_replace( $farr, $tarr, $str );
+    return $str;
+}

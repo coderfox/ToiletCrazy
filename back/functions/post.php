@@ -5,7 +5,7 @@ function parse_post_return_array($coll, $post){
             'id' => (string) $post[ '_id' ],
             'title' => $post[ 'title' ],
             'author' => get_user_array( $coll, $post[ 'author' ] ),
-            'text_html' => MarkdownExtra::defaultTransform( $post[ 'text' ] ),
+            'text_html' => uhtml(MarkdownExtra::defaultTransform( $post[ 'text' ] )),
             'text_md' => $post[ 'text' ],
             'text_plain' => strip_tags( MarkdownExtra::defaultTransform( $post[ 'text' ] ) ),
             'text_preview' => mb_substr( strip_tags( MarkdownExtra::defaultTransform( $post[ 'text' ] ) ), 0, 100, "utf8" ),
