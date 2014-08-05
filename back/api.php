@@ -7,12 +7,22 @@ $coll = array (
         'posts' => $db->selectCollection( $config[ 'db' ][ 'db' ], $config[ 'db' ][ 'coll' ][ 'posts' ] ) 
 );
 
+// securiety check
+foreach ( $_REQUEST as $v ) {
+    if (gettype( $v ) == 'array' || gettype( $v ) == 'object') {
+        api_error( new Exception( 'securiety check failed', 7 ) );
+    }
+}
 if (isset( $_REQUEST[ 'mod' ] ) && isset( $_REQUEST[ 'api' ] )) {
     $call = $_REQUEST[ 'mod' ] . '/' . $_REQUEST[ 'api' ];
 } elseif (isset( $_REQUEST[ 'm' ] ) && isset( $_REQUEST[ 'a' ] )) {
     $call = $_REQUEST[ 'm' ] . '/' . $_REQUEST[ 'a' ];
+} elseif (isset( $_REQUEST[ 'call' ] )) {
+    $call = $_REQUEST[ 'call' ];
+} elseif (isset( $_REQUEST[ 'c' ] )) {
+    $call = $_REQUEST[ 'c' ];
 } else {
-    throw new Exception( 'invaid api call', 6 );
+    api_error( new ApiEx( 'invaid api call', 6 ) );
 }
 switch ($call) {
     case 'timeline/public' :
@@ -111,7 +121,7 @@ switch ($call) {
         }
     default :
         {
-            throw new ApiEx( 'invaid api call', 6 );
+            api_error( new ApiEx( 'invaid api call', 6 ) );
             break;
         }
 }

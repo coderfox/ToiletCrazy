@@ -13,40 +13,48 @@ function api_result($method, $function){
         }
         echo $r;
     } catch ( ApiEx $e ) {
-        $r = array (
-                'error' => $e->getMessage(),
-                'code' => $e->getCode() 
-        );
-        $r = json_encode( $r );
-        if (json_last_error()) {
-            throw new Exception( json_last_error_msg(), json_last_error() );
-        }
-        echo $r;
+        api_error( $e );
     } catch ( Exception $e ) {
-        $r = array (
-                'error' => $e->getMessage(),
-                'code' => 0,
-                'ex_code' => $e->getCode() 
-        );
-        $r = json_encode( $r );
-        if (json_last_error()) {
-            throw new Exception( json_last_error_msg(), json_last_error() );
-        }
-        echo $r;
+        api_server_error( $e );
     }
 }
 function callback($function, $args){
     if (is_callable( $function )) {
         return call_user_func_array( $function, $args );
     } else {
-        throw new Exception( 'invaid function param' );
+        api_server_error( new Exception( 'invaid function param' ) );
+    }
+}
+function api_error($ex){
+    $r = array (
+            'error' => $ex->getMessage(),
+            'code' => $ex->getCode() 
+    );
+    $r = json_encode( $r );
+    if (json_last_error()) {
+        api_server_error( new Exception( json_last_error_msg(), json_last_error() ) );
+    } else {
+        echo $r;
+    }
+}
+function api_server_error($ex){
+    $r = array (
+            'error' => $ex->getMessage(),
+            'code' => 0,
+            'ex_code' => $ex->getCode() 
+    );
+    $r = json_encode( $r );
+    if (json_last_error()) {
+        api_server_error( new Exception( json_last_error_msg(), json_last_error() ) );
+    } else {
+        echo $r;
     }
 }
 function uhtml($str){
     $farr = array (
             "/<(\/?)(object|script|i?frame|style|html|body|title|link|meta|\?|\%)([^>]*?)>/isU",
-            "/(<[^>]*)on[a-zA-Z]+\s*=([^>]*>)/isU"
-        );
+            "/(<[^>]*)on[a-zA-Z]+\s*=([^>]*>)/isU" 
+    );
     $tarr = array (
             " ",
             "",
