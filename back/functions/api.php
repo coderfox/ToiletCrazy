@@ -11,7 +11,7 @@ function api_result($method, $function){
         if (json_last_error()) {
             throw new Exception( json_last_error_msg(), json_last_error() );
         }
-        echo $r;
+        die( $r );
     } catch ( ApiEx $e ) {
         api_error( $e );
     } catch ( Exception $e ) {
@@ -34,7 +34,7 @@ function api_error($ex){
     if (json_last_error()) {
         api_server_error( new Exception( json_last_error_msg(), json_last_error() ) );
     } else {
-        echo $r;
+        die( $r );
     }
 }
 function api_server_error($ex){
@@ -47,7 +47,7 @@ function api_server_error($ex){
     if (json_last_error()) {
         api_server_error( new Exception( json_last_error_msg(), json_last_error() ) );
     } else {
-        echo $r;
+        die( $r );
     }
 }
 function uhtml($str){
