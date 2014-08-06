@@ -14,12 +14,16 @@ foreach ( $_REQUEST as $v ) {
     }
 }
 if (isset( $_REQUEST[ 'mod' ] ) && isset( $_REQUEST[ 'api' ] )) {
+    // api v0.1
     $call = $_REQUEST[ 'mod' ] . '/' . $_REQUEST[ 'api' ];
 } elseif (isset( $_REQUEST[ 'm' ] ) && isset( $_REQUEST[ 'a' ] )) {
+    // api v0.1.2
     $call = $_REQUEST[ 'm' ] . '/' . $_REQUEST[ 'a' ];
 } elseif (isset( $_REQUEST[ 'call' ] )) {
+    // api v0.2
     $call = $_REQUEST[ 'call' ];
 } elseif (isset( $_REQUEST[ 'c' ] )) {
+    // api v0.2
     $call = $_REQUEST[ 'c' ];
 } else {
     api_error( new ApiEx( 'invaid api call', 6 ) );
@@ -28,10 +32,27 @@ switch ($call) {
     case 'timeline/public' :
         {
             api_result( 'GET', function () use($coll){
+                // api v0.3
+                if (isset( $_REQUEST[ 'page' ] ) && is_numeric( $_REQUEST[ 'page' ] )) {
+                    $page = $_REQUEST[ 'page' ];
+                } else {
+                    $page = 1;
+                }
+                // api v0.3
+                if (isset( $_REQUEST[ 'count' ] ) && is_numeric( $_REQUEST[ 'count' ] ) && $_REQUEST[ 'count' ] <= 50 && $_REQUEST[ 'count' ] > 0) {
+                    $count = $_REQUEST[ 'count' ];
+                } else {
+                    $count = 20;
+                }
+                $result = $coll[ 'posts' ]->find()->sort( array (
+                        'time' => - 1 
+                ) );
                 return array (
-                        'posts' => call_user_func( 'parse_posts', $coll, $coll[ 'posts' ]->find()->sort( array (
-                                'time' => - 1 
-                        ) )->limit( 20 ) ) 
+                        'posts' => call_user_func( 'parse_posts', $coll, $result->skip( $count * ($page - 1) )->limit( $count ) ),
+                        'pages' => array (
+                                'count' => (int) ($result->count()) / $count,
+                                'current' => (int) $page 
+                        ) 
                 );
             } );
             break;
@@ -103,14 +124,14 @@ switch ($call) {
                     $ins = array (
                             'nick' => $_REQUEST[ 'nick' ],
                             'pass' => md5( $_REQUEST[ 'pass' ] ),
-                            'token' => md5( $_REQUEST[ 'nick' ] . $_REQUEST[ 'pass' ] ) 
+                            'token' => md5( $_REQUEST[ 'nick' ] . md5( $_REQUEST[ 'pass' ] ) . time() ) 
                     );
                     $result = $coll[ 'users' ]->insert( $ins );
                     if ($result) {
                         return array (
                                 'id' => (string) $ins[ '_id' ],
                                 'nick' => $_REQUEST[ 'nick' ],
-                                'token' => md5( $_REQUEST[ 'nick' ] . $_REQUEST[ 'pass' ] ) 
+                                'token' => md5( $_REQUEST[ 'nick' ] . md5( $_REQUEST[ 'pass' ] ) . time() ) 
                         );
                     } else {
                         throw new Exception( 'server error', 0 );

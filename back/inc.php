@@ -14,5 +14,5 @@ if (file_exists( __DIR__ . '/config.json' )) {
     $config = fread( $config, filesize( __DIR__ . '/config.json' ) );
     $config = json_decode( $config, true );
 } else {
-    throw new Exception( 'error with config' );
+    api_server_error( new Exception( 'error with config' ) );
 }
