@@ -1,9 +1,4 @@
 {
-  "sina": {
-    "key": "",
-    "sec": "",
-    "uri": ""
-  },
   "db": {
     "conn": {
       "uri": "",
@@ -12,7 +7,8 @@
     "db": "ToiletCrazy",
     "coll": {
       "users": "users",
-      "posts": "posts"
+      "posts": "posts",
+      "apps": "apps"
     }
   }
 }
