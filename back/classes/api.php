@@ -27,7 +27,7 @@ class API{
      */
     public function __construct($method, $function, $params = array()){
         $this->setMethod( $method );
-        $this->setCallback( $function );
+        $this->setCall( $function );
         $this->checkParams( $params );
     }
     /**
@@ -50,7 +50,7 @@ class API{
         if ($method == 'GET' || $method == 'POST') {
             $this -> method = $method;
         } else {
-            API::error(new PHPEx( 'invaid value' ));
+            API::error( new PHPEx( 'invaid value' ) );
         }
     }
     /**
@@ -62,7 +62,8 @@ class API{
     public function checkParams($params){
         foreach ( $params as $v ) {
             if (! isset( $_REQUEST[ $v ] )) {
-                API::error(new ApiEx( 'invaid params', 1 ));
+                echo $v;
+                API::error( new ApiEx( 'invaid params', 1 ) );
             }
         }
     }
@@ -84,7 +85,7 @@ class API{
         if (is_callable( $function )) {
             $this -> function = $function;
         } else {
-            API::error(new PHPEx( 'invaid value' ));
+            API::error( new PHPEx( 'invaid value' ) );
         }
     }
     /**
@@ -99,7 +100,7 @@ class API{
                 throw new ApiEx( 'invaid method', 2 );
             }
             $args = func_get_args();
-            $r = json_encode( $this->callback( $args ) );
+            $r = json_encode( $this->call( $args ) );
             if (json_last_error()) {
                 throw new Exception( json_last_error_msg(), json_last_error() );
             }
@@ -123,14 +124,18 @@ class API{
      * @param Exception $ex            
      */
     public static function error($ex){
+        global $config;
+        if ($config[ 'debug' ]) {
+            throw $ex;
+        }
         $r = array (
-                'error' => $ex->getMessage()
+                'error' => $ex->getMessage() 
         );
-        if(get_type($ex)=='ApiEx'){
-            $r['code']=$ex->getCode();
-        }else{
-            $r['code']=0;
-            $r['ex_code']=$ex->getCode();
+        if (get_type( $ex ) == 'ApiEx') {
+            $r[ 'code' ] = $ex->getCode();
+        } else {
+            $r[ 'code' ] = 0;
+            $r[ 'ex_code' ] = $ex->getCode();
         }
         $r = json_encode( $r );
         if (json_last_error()) {

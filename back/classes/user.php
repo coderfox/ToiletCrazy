@@ -3,13 +3,13 @@ class User{
     /**
      * get: getData
      * set: setData
-     * 
+     *
      * @var MongoCursor
      */
     private $data;
     /**
      * construct by data
-     * 
+     *
      * @param MongoCursor $data            
      */
     public function __construct($data){
@@ -17,12 +17,13 @@ class User{
     }
     /**
      * construct by id
-     * 
+     *
      * @param mixed $id
      *            string/MongoId
      * @return User
      */
     public static function byId($id){
+        global $coll;
         if (get_type( $id ) == 'MongoId') {
             $query[ '_id' ] = $id;
         } elseif (get_type( $id ) == 'string') {
@@ -34,7 +35,7 @@ class User{
     }
     /**
      * get: data
-     * 
+     *
      * @return MongoCursor
      */
     public function getData(){
@@ -42,14 +43,14 @@ class User{
     }
     /**
      * set: data
-     * 
+     *
      * @param MongoCursor $data            
      */
     private function setData($data){
         if (get_type( $data ) != 'MongoCursor') {
             API::error( new PHPEx( 'invaid value' ) );
         } else {
-            if ($data->count() == 1) {
+            if ($data->count( true ) == 1) {
                 $this -> data = $data;
             } else {
                 $this -> data = $data->limit( 1 );

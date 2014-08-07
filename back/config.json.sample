@@ -10,5 +10,6 @@
       "posts": "posts",
       "apps": "apps"
     }
-  }
+  },
+  "debug": false
 }

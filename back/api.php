@@ -1,13 +1,6 @@
 <?php
 header( 'Content-type: application/json;charset=utf8' );
 include_once __DIR__ . '/inc.php';
-$db = new MongoClient( $config[ 'db' ][ 'conn' ][ 'uri' ], $config[ 'db' ][ 'conn' ][ 'opt' ] );
-$coll = array (
-        'users' => $db->selectCollection( $config[ 'db' ][ 'db' ], $config[ 'db' ][ 'coll' ][ 'users' ] ),
-        'posts' => $db->selectCollection( $config[ 'db' ][ 'db' ], $config[ 'db' ][ 'coll' ][ 'posts' ] ) 
-);
-global $coll;
-unset($db);
 
 // security check
 foreach ( $_REQUEST as $v ) {
@@ -25,7 +18,8 @@ if (isset( $_REQUEST[ 'call' ] )) {
 switch ($call) {
     case 'timeline/public' :
         {
-            $api=new API('GET', function(){
+            $api = new API( 'GET', function (){
+                global $coll;
                 if (isset( $_REQUEST[ 'page' ] ) && is_numeric( $_REQUEST[ 'page' ] )) {
                     $page = $_REQUEST[ 'page' ];
                 } else {
@@ -37,52 +31,60 @@ switch ($call) {
                     $count = 20;
                 }
                 $result = $coll[ 'posts' ]->find()->sort( array (
-                        'time' => - 1
+                        'time' => - 1 
                 ) )->skip( $count * ($page - 1) )->limit( $count );
-                return array(
-                	'posts'=>Post::getArrayBatch($result),
-                        'pages'=>array (
-                                'count' => (int) ($result->count()) / $count,
+                return array (
+                        'posts' => Post::getArrayBatch( $result ),
+                        'pages' => array (
+                                'count' => ceil( (int) ($result->count()) / $count ),
                                 'current' => (int) $page 
                         ) 
                 );
-            });
+            } );
             $api->execute();
             break;
         }
     case 'auth/auth' :
         {
-            $api=new API('POST',function(){
+            $api = new API( 'POST', function (){
+                global $coll;
                 if ($coll[ 'users' ]->find( array (
                         'nick' => $_REQUEST[ 'nick' ],
-                        'pass' => md5( $_REQUEST[ 'pass' ] )
+                        'pass' => md5( $_REQUEST[ 'pass' ] ) 
                 ) )->count() > 0) {
                     $res = $coll[ 'users' ]->find( array (
                             'nick' => $_REQUEST[ 'nick' ],
-                            'pass' => md5( $_REQUEST[ 'pass' ] )
+                            'pass' => md5( $_REQUEST[ 'pass' ] ) 
                     ) );
                     $r1 = array (
-                            'token' => $res->getNext()['token']
+                            'token' => $res->getNext()['token'] 
                     );
-                    $u=new User($res);
+                    $u = new User( $res );
                     $r2 = $u->getArray();
                     return $r2 + $r1;
                 }
-            },array('nick','pass','key'));
+            }, array (
+                    'nick',
+                    'pass' 
+            ) );
             $api->execute();
             break;
         }
     case 'post/show' :
         {
-            $api=new API( 'GET',function($id){
-            	return Post::byId($id)->getArray();
-            }, array('id'));
-            $api->execute($_REQUEST[ 'id' ]);
+            $api = new API( 'GET', function ($id){
+                global $coll;
+                return Post::byId( $id )->getArray();
+            }, array (
+                    'id' 
+            ) );
+            $api->execute( $_REQUEST[ 'id' ] );
             break;
         }
     case 'post/post' :
         {
-            $api=new API( 'POST',function () use($coll){
+            $api = new API( 'POST', function (){
+                global $coll;
                 $author = $coll[ 'users' ]->find( array (
                         'token' => $_REQUEST[ 'token' ] 
                 ) )->getNext();
@@ -96,40 +98,50 @@ switch ($call) {
                     $result = $coll[ 'posts' ]->insert( $ins );
                     if ($result) {
                         $id = $ins[ '_id' ];
-                        return Post::byId($id)->getArray();
+                        return Post::byId( $id )->getArray();
                     } else {
                         throw new ApiEx( 'server error', 0 );
                     }
                 } else {
                     throw new ApiEx( 'invaid token', 5 );
                 }
-            } , array('token','title','text'));
+            }, array (
+                    'token',
+                    'title',
+                    'text' 
+            ) );
             $api->execute();
             break;
         }
     case 'user/reg' :
         {
-            $api=new API( 'POST',function () use($coll){
+            $api = new API( 'POST', function (){
+                global $coll;
                 if ($coll[ 'users' ]->find( array (
                         'nick' => $_REQUEST[ 'nick' ] 
-                ) )->count() > 0) {
+                ) )->count( true ) > 0) {
                     throw new ApiEx( 'nickname already used', 6 );
                 } else {
                     $ins = array (
                             'nick' => $_REQUEST[ 'nick' ],
                             'pass' => md5( $_REQUEST[ 'pass' ] ),
+                            'token' => md5( $_REQUEST[ 'nick' ] . md5( $_REQUEST[ 'pass' ] ) . time() ) 
                     );
                     $result = $coll[ 'users' ]->insert( $ins );
                     if ($result) {
                         return array (
-                                'id' => $ins[ '_id' ],
+                                'id' => (string) $ins[ '_id' ],
                                 'nick' => $_REQUEST[ 'nick' ],
+                                'token' => md5( $_REQUEST[ 'nick' ] . md5( $_REQUEST[ 'pass' ] ) . time() ) 
                         );
                     } else {
                         throw new ApiEx( 'server error', 0 );
                     }
                 }
-            } , array('nick','pass'));
+            }, array (
+                    'nick',
+                    'pass' 
+            ) );
             $api->execute();
             break;
         }
