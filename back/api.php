@@ -6,85 +6,83 @@ $coll = array (
         'users' => $db->selectCollection( $config[ 'db' ][ 'db' ], $config[ 'db' ][ 'coll' ][ 'users' ] ),
         'posts' => $db->selectCollection( $config[ 'db' ][ 'db' ], $config[ 'db' ][ 'coll' ][ 'posts' ] ) 
 );
+global $coll;
+unset($db);
 
-// securiety check
+// security check
 foreach ( $_REQUEST as $v ) {
     if (gettype( $v ) == 'array' || gettype( $v ) == 'object') {
-        api_error( new Exception( 'securiety check failed', 7 ) );
+        API::error( new Exception( 'security check failed', 4 ) );
     }
 }
-if (isset( $_REQUEST[ 'mod' ] ) && isset( $_REQUEST[ 'api' ] )) {
-    // api v0.1
-    $call = $_REQUEST[ 'mod' ] . '/' . $_REQUEST[ 'api' ];
-} elseif (isset( $_REQUEST[ 'm' ] ) && isset( $_REQUEST[ 'a' ] )) {
-    // api v0.1.2
-    $call = $_REQUEST[ 'm' ] . '/' . $_REQUEST[ 'a' ];
-} elseif (isset( $_REQUEST[ 'call' ] )) {
-    // api v0.2
+if (isset( $_REQUEST[ 'call' ] )) {
     $call = $_REQUEST[ 'call' ];
 } elseif (isset( $_REQUEST[ 'c' ] )) {
-    // api v0.2
     $call = $_REQUEST[ 'c' ];
 } else {
-    api_error( new ApiEx( 'invaid api call', 6 ) );
+    API::error( new ApiEx( 'invaid call', 3 ) );
 }
 switch ($call) {
     case 'timeline/public' :
         {
-            api_result( 'GET', function () use($coll){
-                // api v0.3
+            $api=new API('GET', function(){
                 if (isset( $_REQUEST[ 'page' ] ) && is_numeric( $_REQUEST[ 'page' ] )) {
                     $page = $_REQUEST[ 'page' ];
                 } else {
                     $page = 1;
                 }
-                // api v0.3
                 if (isset( $_REQUEST[ 'count' ] ) && is_numeric( $_REQUEST[ 'count' ] ) && $_REQUEST[ 'count' ] <= 50 && $_REQUEST[ 'count' ] > 0) {
                     $count = $_REQUEST[ 'count' ];
                 } else {
                     $count = 20;
                 }
                 $result = $coll[ 'posts' ]->find()->sort( array (
-                        'time' => - 1 
-                ) );
-                return array (
-                        'posts' => call_user_func( 'parse_posts', $coll, $result->skip( $count * ($page - 1) )->limit( $count ) ),
-                        'pages' => array (
+                        'time' => - 1
+                ) )->skip( $count * ($page - 1) )->limit( $count );
+                return array(
+                	'posts'=>Post::getArrayBatch($result),
+                        'pages'=>array (
                                 'count' => (int) ($result->count()) / $count,
                                 'current' => (int) $page 
                         ) 
                 );
-            } );
+            });
+            $api->execute();
             break;
         }
     case 'auth/auth' :
         {
-            api_result( 'POST', function () use($_REQUEST, $coll){
+            $api=new API('POST',function(){
                 if ($coll[ 'users' ]->find( array (
                         'nick' => $_REQUEST[ 'nick' ],
-                        'pass' => md5( $_REQUEST[ 'pass' ] ) 
+                        'pass' => md5( $_REQUEST[ 'pass' ] )
                 ) )->count() > 0) {
                     $res = $coll[ 'users' ]->find( array (
                             'nick' => $_REQUEST[ 'nick' ],
-                            'pass' => md5( $_REQUEST[ 'pass' ] ) 
+                            'pass' => md5( $_REQUEST[ 'pass' ] )
                     ) );
                     $r1 = array (
-                            'token' => $res->getNext()['token'] 
+                            'token' => $res->getNext()['token']
                     );
-                    $r2 = parse_user( $res );
+                    $u=new User($res);
+                    $r2 = $u->getArray();
                     return $r2 + $r1;
                 }
-            } );
+            },array('nick','pass','key'));
+            $api->execute();
             break;
         }
     case 'post/show' :
         {
-            api_result( 'GET', 'get_post_array', $coll, $_REQUEST[ 'id' ] );
+            $api=new API( 'GET',function($id){
+            	return Post::byId($id)->getArray();
+            }, array('id'));
+            $api->execute($_REQUEST[ 'id' ]);
             break;
         }
     case 'post/post' :
         {
-            api_result( 'POST', function () use($_REQUEST, $coll){
+            $api=new API( 'POST',function () use($coll){
                 $author = $coll[ 'users' ]->find( array (
                         'token' => $_REQUEST[ 'token' ] 
                 ) )->getNext();
@@ -92,57 +90,52 @@ switch ($call) {
                     $ins = array (
                             'title' => $_REQUEST[ 'title' ],
                             'text' => $_REQUEST[ 'text' ],
-                            'author' => (string) ($author[ '_id' ]),
+                            'author' => $author[ '_id' ],
                             'time' => time() 
                     );
                     $result = $coll[ 'posts' ]->insert( $ins );
                     if ($result) {
-                        $id = (string) $ins[ '_id' ];
-                        return get_post_array( $coll, $id );
+                        $id = $ins[ '_id' ];
+                        return Post::byId($id)->getArray();
                     } else {
-                        throw new Exception( 'server error', 0 );
+                        throw new ApiEx( 'server error', 0 );
                     }
                 } else {
-                    throw new Exception( 'invaid token', 5 );
+                    throw new ApiEx( 'invaid token', 5 );
                 }
-            } );
-            break;
-        }
-    case 'user/show' :
-        {
-            throw new Exception( 'not completed', 0 );
+            } , array('token','title','text'));
+            $api->execute();
             break;
         }
     case 'user/reg' :
         {
-            api_result( 'POST', function () use($coll, $_REQUEST){
+            $api=new API( 'POST',function () use($coll){
                 if ($coll[ 'users' ]->find( array (
                         'nick' => $_REQUEST[ 'nick' ] 
                 ) )->count() > 0) {
-                    throw new Exception( 'nickname already used', 3 );
+                    throw new ApiEx( 'nickname already used', 6 );
                 } else {
                     $ins = array (
                             'nick' => $_REQUEST[ 'nick' ],
                             'pass' => md5( $_REQUEST[ 'pass' ] ),
-                            'token' => md5( $_REQUEST[ 'nick' ] . md5( $_REQUEST[ 'pass' ] ) . time() ) 
                     );
                     $result = $coll[ 'users' ]->insert( $ins );
                     if ($result) {
                         return array (
-                                'id' => (string) $ins[ '_id' ],
+                                'id' => $ins[ '_id' ],
                                 'nick' => $_REQUEST[ 'nick' ],
-                                'token' => md5( $_REQUEST[ 'nick' ] . md5( $_REQUEST[ 'pass' ] ) . time() ) 
                         );
                     } else {
-                        throw new Exception( 'server error', 0 );
+                        throw new ApiEx( 'server error', 0 );
                     }
                 }
-            } );
+            } , array('nick','pass'));
+            $api->execute();
             break;
         }
     default :
         {
-            api_error( new ApiEx( 'invaid api call', 6 ) );
+            API::error( new ApiEx( 'invaid call', 3 ) );
             break;
         }
 }
